@@ -59,7 +59,16 @@ async function main()
 		process.exit();
 	}
 
-	const tmpfile = path.join(process.env.TMPDIR ? process.env.TMPDIR : '/tmp', `${encodeURIComponent(pkgname)}.${version}.sig`);
+	let tmpdir = process.env.TMPDIR ? process.env.TMPDIR : '/tmp';
+	if(process.platform === 'win32')
+	{
+		tmpdir = process.env.TMP ? process.env.TMP : process.env.TEMP;
+	}
+	fs.access(tmpdir, fs.constants.W_OK, (err) => {
+		console.error(err);
+		process.exit(1);
+	});
+	const tmpfile = path.join(tmpdir, `${encodeURIComponent(pkgname)}.${version}.sig`);
 	fs.writeFileSync(tmpfile, pkgversion.dist['npm-signature']);
 	const message = `${pkgname}@${version}:${pkgversion.dist.integrity}`;
 
