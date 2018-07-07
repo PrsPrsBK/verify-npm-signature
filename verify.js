@@ -65,36 +65,42 @@ async function main()
 		tmpdir = process.env.TMP ? process.env.TMP : process.env.TEMP;
 	}
 	fs.access(tmpdir, fs.constants.W_OK, (err) => {
-		console.error(err);
-		process.exit(1);
-	});
-	const tmpfile = path.join(tmpdir, `${encodeURIComponent(pkgname)}.${version}.sig`);
-	fs.writeFileSync(tmpfile, pkgversion.dist['npm-signature']);
-	const message = `${pkgname}@${version}:${pkgversion.dist.integrity}`;
+		if(err)
+		{
+			console.error(err);
+			process.exit(1);
+		}
+		else
+		{
+			const tmpfile = path.join(tmpdir, `${encodeURIComponent(pkgname)}.${version}.sig`);
+			fs.writeFileSync(tmpfile, pkgversion.dist['npm-signature']);
+			const message = `${pkgname}@${version}:${pkgversion.dist.integrity}`;
 
-	// keybase pgp verify --signed-by npmregistry -d sig-to-check -m 'message'
-	const opts = [
-		'pgp',
-		'verify',
-		'--signed-by',
-		'npmregistry',
-		'-d',
-		tmpfile,
-		'-m',
-		message
-	];
+			// keybase pgp verify --signed-by npmregistry -d sig-to-check -m 'message'
+			const opts = [
+				'pgp',
+				'verify',
+				'--signed-by',
+				'npmregistry',
+				'-d',
+				tmpfile,
+				'-m',
+				message
+			];
 
-	const kb = CP.spawn('keybase', opts, { stdio: 'inherit' });
-	kb.on('error', err =>
-	{
-		console.error(err);
-		process.exit(1);
-	});
+			const kb = CP.spawn('keybase', opts, { stdio: 'inherit' });
+			kb.on('error', err =>
+			{
+				console.error(err);
+				process.exit(1);
+			});
 
-	kb.on('close', code =>
-	{
-		fs.unlinkSync(tmpfile);
-		process.exit(code);
+			kb.on('close', code =>
+			{
+				fs.unlinkSync(tmpfile);
+				process.exit(code);
+			});
+		}
 	});
 }
 
