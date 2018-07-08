@@ -60,6 +60,7 @@ async function main()
 	}
 
 	let tmpdir = process.env.TMPDIR ? process.env.TMPDIR : '/tmp';
+	//os.tmpdir() may be enough.
 	if(process.platform === 'win32')
 	{
 		tmpdir = process.env.TMP ? process.env.TMP : process.env.TEMP;
